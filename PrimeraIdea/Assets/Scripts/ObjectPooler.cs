@@ -15,8 +15,15 @@ public class ObjectPooler : MonoBehaviour
     public int obstaclePooledAmount;
     public bool willGrowObstacle = true;
 
+	/*
+	public GameObject pooledCloud;
+	public int cloudPooledAmount;
+	public bool willGrowCloud = true;
+	*/
+
     List<GameObject> pooledRoads;
     List<GameObject> pooledObstacles;
+	//List<GameObject> pooledClouds;
 
 
     void Awake()
@@ -43,6 +50,15 @@ public class ObjectPooler : MonoBehaviour
             obj.SetActive(false);
             pooledObstacles.Add(obj);
         }
+
+		/*
+		for(int i = 0; i < cloudPooledAmount; i++)
+		{
+			GameObject obj = Instantiate(pooledCloud);
+			obj.SetActive(false);
+			pooledClouds.Add(obj);
+		}
+		*/
 
     }
 
@@ -78,7 +94,7 @@ public class ObjectPooler : MonoBehaviour
             }
         }
 
-        if (willGrowRoad)
+        if (willGrowObstacle)
         {
             GameObject obj = (GameObject)Instantiate(pooledObstacle);
             pooledObstacles.Add(obj);
@@ -87,6 +103,29 @@ public class ObjectPooler : MonoBehaviour
 
         return null;
     }
+
+	/*
+	public GameObject GetPooledCloud()
+	{
+
+		for (int i = 0; i < pooledClouds.Count; ++i)
+		{
+			if (!pooledClouds[i].activeInHierarchy)
+			{
+				return pooledClouds[i];
+			}
+		}
+
+		if (willGrowCloud)
+		{
+			GameObject obj = (GameObject)Instantiate(pooledCloud);
+			pooledClouds.Add(obj);
+			return obj;
+		}
+
+		return null;
+	}
+	*/
 }
 	
 

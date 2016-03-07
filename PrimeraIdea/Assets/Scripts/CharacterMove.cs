@@ -15,6 +15,7 @@ public class CharacterMove : MonoBehaviour
 
     private int carril;
     private Vector3 destination;
+	private Vector3 destinationCamera;
     private bool moving = false;
     private int center;
 
@@ -25,6 +26,7 @@ public class CharacterMove : MonoBehaviour
     private bool hasBeenDamaged;
 
     public Slider healthSlider;
+	public Text puntuation;
 
     // Use this for initialization
     void Start()
@@ -35,6 +37,8 @@ public class CharacterMove : MonoBehaviour
         pulsed = false;
         carril = center = 3;
         destination = transform.position;
+		destinationCamera = GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position;
+
         center = carril;
         speed = 0.1f;
 
@@ -58,23 +62,42 @@ public class CharacterMove : MonoBehaviour
         }
          * */
 
+		puntuation.text = ((int)Time.time).ToString() ;
+
         if (canIPulse)
         {
             if (Input.GetKeyDown(KeyCode.A) && carril != 1)
             {
                 destination += Vector3.left * distance;
                 StartCoroutine(MoveFromTo(transform.position, destination, 0.1f, true));
+				destinationCamera += Vector3.left * (distance * 0.70f);
+				StartCoroutine(MoveFromTo(GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position
+					, destinationCamera, 0.1f, false));
+				/*
+				destinationCamera += Vector3.right * (distance / 2);
+				StartCoroutine(MoveFromTo(GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position
+					, destinationCamera, 0.2f, false));
+					*/
+				
                 pulsed = true;
                 carril--;
                 time = 0;
 
-                //GameObject.Find("Main Camera").GetComponent<Camera>().transform.position += Vector3.left * distance;
             }
 
             if (Input.GetKeyDown(KeyCode.D) && carril != 5)
             {
                 destination += Vector3.right * distance;
                 StartCoroutine(MoveFromTo(transform.position, destination, 0.1f, true));
+				destinationCamera += Vector3.right * (distance * 0.70f);
+				StartCoroutine(MoveFromTo(GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position
+					, destinationCamera, 0.1f, false));
+				/*
+				destinationCamera += Vector3.left * (distance / 2);
+				StartCoroutine(MoveFromTo(GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position
+					, destinationCamera, 0.2f, false));
+					*/
+
                 pulsed = true;
                 carril++;
                 time = 0;
@@ -129,7 +152,7 @@ public class CharacterMove : MonoBehaviour
     IEnumerator MoveFromTo(Vector3 pA, Vector3 pB, float time, bool character)
     {
 
-        if (!moving)
+		if (!moving || !character)
         {
             moving = true;
             float t = 0;
@@ -138,16 +161,20 @@ public class CharacterMove : MonoBehaviour
             {
                 t += Time.deltaTime / time;
 
-                if (character)
-                    transform.position = Vector3.Lerp(pA, pB, t);
-                else
-                    GameObject.Find("Main Camera").GetComponent<Camera>().transform.position = Vector3.Lerp(pA, pB, t);
+				if (character)
+					transform.position = Vector3.Lerp (pA, pB, t);
+				else 
+					GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position = Vector3.Lerp (pA, pB, t);
+
 
                 yield return null;
             }
 
             moving = false;
+
         }
     }
+
+
 }
 

@@ -14,6 +14,7 @@ public class ScenarioGeneration : MonoBehaviour {
 
     private List<GameObject> currentRoads = new List<GameObject>();
     private List<GameObject> nonVisibleRoads = new List<GameObject>();
+	private List<GameObject> clouds = new List<GameObject>();
     private int currentRoadId = 0;
     private Transform CenterPoints;
 
@@ -74,6 +75,7 @@ public class ScenarioGeneration : MonoBehaviour {
         // Vector3 endPoint = transform.position + speed * Vector3.back;
         //transform.position = Vector3.Lerp(transform.position, endPoint, Time.deltaTime);
          
+		//clouds.transform.position += Vector3.right * 0.01f;
           
         foreach(var r in currentRoads)
         {
