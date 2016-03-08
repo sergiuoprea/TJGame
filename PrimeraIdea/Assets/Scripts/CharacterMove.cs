@@ -26,7 +26,15 @@ public class CharacterMove : MonoBehaviour
     private bool hasBeenDamaged;
 
     public Slider healthSlider;
-	public Text puntuation;
+    
+    private Vector2 startPos = Vector2.zero;
+    private bool couldBeSwipe = false;
+    private float comfortZone;
+    private float minSwipeDist = 50.0f;
+    private float maxSwipeTime = 0.5f;
+    private float startTime;
+
+    private int direction;
 
     // Use this for initialization
     void Start()
@@ -48,25 +56,83 @@ public class CharacterMove : MonoBehaviour
         damage = 40;
         healthSlider.value = currentHealth;
         hasBeenDamaged = false;
+
+
     }
 
     // Update is called once per frame
     void Update()
     {
+               
 
-
-        /*
-        if(hasBeenDamaged)
+        if (Input.touchCount > 0)
         {
-            StartCoroutine(Damaged(1.5f,0.5f));
+            float swipeTime;
+            float swipeDist;
+            Touch touch = Input.touches[0];
+
+            switch (touch.phase)
+            {
+                case TouchPhase.Began:
+                    couldBeSwipe = true;
+                    startPos = touch.position;
+                    startTime = Time.time;
+
+                    break;
+               
+            case TouchPhase.Moved:
+
+                    swipeTime = Time.time - startTime;
+                    swipeDist = (touch.position - startPos).magnitude;
+
+                    if (couldBeSwipe && (swipeTime < maxSwipeTime) && (swipeDist > minSwipeDist))
+                    {
+                        // It's a swiiiiiiiiiiiipe!
+
+                        if (Mathf.Sign(touch.position.x - startPos.x) >= 0)
+                            direction = 1;
+                        else
+                            direction = -1;
+
+                        couldBeSwipe = false;
+
+                    }
+
+                    break;
+
+                    /*
+
+            case TouchPhase.Stationary:
+                couldBeSwipe = false;
+                break;
+                */
+
+                case TouchPhase.Ended:
+                    couldBeSwipe = true;
+                    /*
+                    swipeTime = Time.time - startTime;
+                    swipeDist = (touch.position - startPos).magnitude;
+
+                    if (couldBeSwipe && (swipeTime < maxSwipeTime) && (swipeDist > minSwipeDist))
+                    {
+                        // It's a swiiiiiiiiiiiipe!
+
+                        if (Mathf.Sign(touch.position.x - startPos.x) >= 0)
+                            direction = 1;
+                        else
+                            direction = -1;
+                        
+                    }
+                    */
+
+                    break;
+
+            }
         }
-         * */
-
-		puntuation.text = ((int)Time.time).ToString() ;
-
+        
         if (canIPulse)
         {
-            if (Input.GetKeyDown(KeyCode.A) && carril != 1)
+            if ((Input.GetKeyDown(KeyCode.A) || direction == -1) && carril != 1)
             {
                 destination += Vector3.left * distance;
                 StartCoroutine(MoveFromTo(transform.position, destination, 0.1f, true));
@@ -82,10 +148,11 @@ public class CharacterMove : MonoBehaviour
                 pulsed = true;
                 carril--;
                 time = 0;
+                direction = 0;
 
             }
 
-            if (Input.GetKeyDown(KeyCode.D) && carril != 5)
+            if ((Input.GetKeyDown(KeyCode.D) || direction == 1) && carril != 5)
             {
                 destination += Vector3.right * distance;
                 StartCoroutine(MoveFromTo(transform.position, destination, 0.1f, true));
@@ -101,6 +168,7 @@ public class CharacterMove : MonoBehaviour
                 pulsed = true;
                 carril++;
                 time = 0;
+                direction = 0;
             }
         }
 
@@ -121,32 +189,28 @@ public class CharacterMove : MonoBehaviour
         {
             col.gameObject.SetActive(false);
             currentHealth -= damage;
+
+            if (currentHealth < 0)
+                GameProgress.current.GameOver = true;
+
             healthSlider.value = currentHealth;
-            //hasBeenDamaged = true;
+            hasBeenDamaged = true;
+            StartCoroutine(Damaged(7, 0.15f));
         }
     }
 
     IEnumerator Damaged(float duration, float s)
     {
-        /*
-        while (duration > s)
+       
+
+        for(int i = 0; i < duration; ++i)
         {
-            duration -= Time.deltaTime;
             GetComponentInChildren<MeshRenderer>().enabled = !GetComponentInChildren<MeshRenderer>().enabled;
             yield return new WaitForSeconds(s);
-        }
-         * */
-
-        GetComponentInChildren<MeshRenderer>().enabled = !GetComponentInChildren<MeshRenderer>().enabled;
-        yield return new WaitForSeconds(s);
-        GetComponentInChildren<MeshRenderer>().enabled = !GetComponentInChildren<MeshRenderer>().enabled;
-        yield return new WaitForSeconds(s);
-        GetComponentInChildren<MeshRenderer>().enabled = !GetComponentInChildren<MeshRenderer>().enabled;
-        yield return new WaitForSeconds(s);
-
-
-        hasBeenDamaged = false;
+        }  
+       
         GetComponentInChildren<MeshRenderer>().enabled = true;
+        hasBeenDamaged = false;
     }
 
     IEnumerator MoveFromTo(Vector3 pA, Vector3 pB, float time, bool character)

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public class ScenarioGeneration : MonoBehaviour {
 
-
     public GameObject road;
 
     public Shader curvedWorld;
@@ -18,18 +17,21 @@ public class ScenarioGeneration : MonoBehaviour {
     private int currentRoadId = 0;
     private Transform CenterPoints;
 
-    private float speed = 0.2f;
+    private float speed;
 
     private bool newRoad = false;
     private object obj;
 
-    void Start () {
 
+
+    void Start () {
+        Application.targetFrameRate = 60;
         distance = 0;
         Camera.main.RenderWithShader(curvedWorld, "RenderType");
         numberRoads = 3;
 
-        CreateNewRoad();        
+        CreateNewRoad();
+        speed = GameProgress.current.Speed;
     }
 
 
@@ -70,39 +72,42 @@ public class ScenarioGeneration : MonoBehaviour {
         }
     }
 	
-	void Update () {        
+	void Update () {
 
         // Vector3 endPoint = transform.position + speed * Vector3.back;
         //transform.position = Vector3.Lerp(transform.position, endPoint, Time.deltaTime);
-         
-		//clouds.transform.position += Vector3.right * 0.01f;
-          
-        foreach(var r in currentRoads)
+
+        //clouds.transform.position += Vector3.right * 0.01f;
+
+        if (!GameProgress.current.GameOver)
         {
-            if (r.transform.position.z <= -35)
+            foreach (var r in currentRoads)
             {
-                nonVisibleRoads.Add(r);
-                newRoad = true;
+                if (r.transform.position.z <= -35)
+                {
+                    nonVisibleRoads.Add(r);
+                    newRoad = true;
+                }
+                else
+                    r.transform.position += speed * Vector3.back;
             }
-            else
-                r.transform.position += speed * Vector3.back;
-        }
 
-        if(newRoad)
-        {
-            newRoad = false;
-            CreateNewRoad();
-            currentRoadId++;
-        }
+            if (newRoad)
+            {
+                newRoad = false;
+                CreateNewRoad();
+                currentRoadId++;
+            }
 
-        foreach(var r in nonVisibleRoads)
-        {
-            currentRoadId--;
-            currentRoads.Remove(r);
-            r.SetActive(false);
-             
+            foreach (var r in nonVisibleRoads)
+            {
+                currentRoadId--;
+                currentRoads.Remove(r);
+                r.SetActive(false);
+
+            }
+            nonVisibleRoads.Clear();
         }
-        nonVisibleRoads.Clear();
 
     }
 	
