@@ -30,25 +30,29 @@ public class SpawnScript : MonoBehaviour {
 
         tiempoTranscurrido += Time.deltaTime;
 
-        if (tiempoTranscurrido > frecuenciaSpawn && !GameProgress.current.GameOver)
+        if (!GameProgress.current.GameOver)
         {
-            GameObject temp;
-            if (spawnPowerup)
+            if (tiempoTranscurrido > frecuenciaSpawn && !GameProgress.current.GameOver)
             {
-                //temp = (GameObject)Instantiate(powerup);
-                //Vector3 pos = temp.transform.position;
-                //temp.transform.position = new Vector3((int)Random.Range(-3.75f, 3.75f), pos.y +5, 80);
-                
-            }
-            else
-            {
-                temp = ObjectPooler.current.GetPooledObstacle();
-                temp.SetActive(true);
-                temp.transform.position = new Vector3(rails[(int)Random.Range(0, 4)], 0.5f, 80);
-            }
+                GameObject temp;
+                if (spawnPowerup)
+                {
+                    //temp = (GameObject)Instantiate(powerup);
+                    //Vector3 pos = temp.transform.position;
+                    //temp.transform.position = new Vector3((int)Random.Range(-3.75f, 3.75f), pos.y +5, 80);
 
-            tiempoTranscurrido -= frecuenciaSpawn;
-            spawnPowerup = !spawnPowerup;
+                }
+                else
+                {
+                    temp = ObjectPooler.current.GetPooledObstacle();
+                    temp.SetActive(true);
+                    temp.transform.position = new Vector3(rails[(int)Random.Range(0, 4)], 0.5f, 80);
+                    obstacles.Add(temp);
+                }
+
+                tiempoTranscurrido -= frecuenciaSpawn;
+                spawnPowerup = !spawnPowerup;
+            }
         }
 	}
 }

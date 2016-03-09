@@ -130,7 +130,7 @@ public class CharacterMove : MonoBehaviour
             }
         }
         
-        if (canIPulse)
+        if (canIPulse && !GameProgress.current.GameOver)
         {
             if ((Input.GetKeyDown(KeyCode.A) || direction == -1) && carril != 1)
             {
@@ -192,10 +192,12 @@ public class CharacterMove : MonoBehaviour
 
             if (currentHealth < 0)
                 GameProgress.current.GameOver = true;
-
-            healthSlider.value = currentHealth;
-            hasBeenDamaged = true;
-            StartCoroutine(Damaged(7, 0.15f));
+            else
+            {
+                healthSlider.value = currentHealth;
+                hasBeenDamaged = true;
+                StartCoroutine(Damaged(7, 0.15f));
+            }
         }
     }
 

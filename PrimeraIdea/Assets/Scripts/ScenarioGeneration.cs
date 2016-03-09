@@ -9,11 +9,9 @@ public class ScenarioGeneration : MonoBehaviour {
     public Shader curvedWorld;
     public GameObject building;
     public float numberRoads;
-    private float distance;
 
     private List<GameObject> currentRoads = new List<GameObject>();
     private List<GameObject> nonVisibleRoads = new List<GameObject>();
-	private List<GameObject> clouds = new List<GameObject>();
     private int currentRoadId = 0;
     private Transform CenterPoints;
 
@@ -26,7 +24,6 @@ public class ScenarioGeneration : MonoBehaviour {
 
     void Start () {
         Application.targetFrameRate = 60;
-        distance = 0;
         Camera.main.RenderWithShader(curvedWorld, "RenderType");
         numberRoads = 3;
 
@@ -108,7 +105,6 @@ public class ScenarioGeneration : MonoBehaviour {
             }
             nonVisibleRoads.Clear();
         }
-
     }
 	
 }

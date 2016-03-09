@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
-
+using UnityEngine.SceneManagement;
 
 public class GameProgress : MonoBehaviour {
 
@@ -11,11 +11,13 @@ public class GameProgress : MonoBehaviour {
     private int puntuation;
     private float totalPuntuation;
     public Text puntuationText;
+    public Button restartButton;
 
     public GameObject endPanel;
 
     public bool GameOver { get; set; }
     public float Speed { get; set; }
+
 
     void Awake()
     {
@@ -25,7 +27,7 @@ public class GameProgress : MonoBehaviour {
 
 	void Start () {
 
-        GameOver = false;	
+        GameOver = false;
 	}
 	
 	void Update () {
@@ -43,7 +45,11 @@ public class GameProgress : MonoBehaviour {
 
         //Aqui se definira el aumento de la dificultad
 
-
 	
 	}
+
+    public void ReStart()
+    {
+        SceneManager.LoadScene(0);
+    }
 }
