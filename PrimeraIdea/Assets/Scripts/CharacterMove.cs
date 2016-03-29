@@ -12,6 +12,8 @@ public class CharacterMove : MonoBehaviour
     private float time;
     private bool canIPulse;
     private bool pulsed;
+	private bool jump;
+
 
     private int carril;
     private Vector3 destination;
@@ -43,11 +45,12 @@ public class CharacterMove : MonoBehaviour
         time = 0;
         canIPulse = true;
         pulsed = false;
+		jump = false;
         carril = center = 3;
         destination = transform.position;
 		destinationCamera = GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position;
 
-        center = carril;
+        //center = carril;
         speed = 0.1f;
 
         // Health
@@ -63,7 +66,6 @@ public class CharacterMove : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-               
 
         if (Input.touchCount > 0)
         {
@@ -88,12 +90,17 @@ public class CharacterMove : MonoBehaviour
                     if (couldBeSwipe && (swipeTime < maxSwipeTime) && (swipeDist > minSwipeDist))
                     {
                         // It's a swiiiiiiiiiiiipe!
+						
+						float h = Mathf.Sign (touch.position.x - startPos.x);
+						float v = Mathf.Sign (touch.position.y - startPos.y);
 
-                        if (Mathf.Sign(touch.position.x - startPos.x) >= 0)
-                            direction = 1;
-                        else
-                            direction = -1;
-
+						if (h >= 0 && h > v)
+							direction = 1;
+						else if (h <= 0 && h > v)
+							direction = -1;
+						else if (v >= 0 && v > h)
+							direction = 2;
+						
                         couldBeSwipe = false;
 
                     }
@@ -132,13 +139,14 @@ public class CharacterMove : MonoBehaviour
         
         if (canIPulse && !GameProgress.current.GameOver)
         {
-            if ((Input.GetKeyDown(KeyCode.A) || direction == -1) && carril != 1)
+			if ((Input.GetKeyDown(KeyCode.A) || direction == -1) && carril != 1 && (!moving || jump))
             {
                 destination += Vector3.left * distance;
-                StartCoroutine(MoveFromTo(transform.position, destination, 0.1f, true));
+				//StopCoroutine ("MoveFromTo");
+                StartCoroutine(MoveFromTo(transform.position, destination, 0.1f));
 				destinationCamera += Vector3.left * (distance * 0.70f);
-				StartCoroutine(MoveFromTo(GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position
-					, destinationCamera, 0.1f, false));
+				StartCoroutine(MoveCameraFromTo(GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position
+					, destinationCamera, 0.1f));
 				/*
 				destinationCamera += Vector3.right * (distance / 2);
 				StartCoroutine(MoveFromTo(GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position
@@ -152,13 +160,14 @@ public class CharacterMove : MonoBehaviour
 
             }
 
-            if ((Input.GetKeyDown(KeyCode.D) || direction == 1) && carril != 5)
+			if ((Input.GetKeyDown(KeyCode.D) || direction == 1) && carril != 5 && (!moving || jump))
             {
                 destination += Vector3.right * distance;
-                StartCoroutine(MoveFromTo(transform.position, destination, 0.1f, true));
+				//StopCoroutine ("MoveFromTo");
+                StartCoroutine(MoveFromTo(transform.position, destination, 0.1f));
 				destinationCamera += Vector3.right * (distance * 0.70f);
-				StartCoroutine(MoveFromTo(GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position
-					, destinationCamera, 0.1f, false));
+				StartCoroutine(MoveCameraFromTo(GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position
+					, destinationCamera, 0.1f));
 				/*
 				destinationCamera += Vector3.left * (distance / 2);
 				StartCoroutine(MoveFromTo(GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position
@@ -171,17 +180,51 @@ public class CharacterMove : MonoBehaviour
                 direction = 0;
             }
 
-            if ((Input.GetKeyDown(KeyCode.W)))
+			if ((Input.GetKeyDown(KeyCode.W) || direction == 2) && !jump && !moving)
             {
                 destination += Vector3.up * distance;
-                StartCoroutine(MoveFromTo(transform.position, destination, 0.1f, true));
+				StartCoroutine(MoveFromTo(transform.position, destination, 0.3f));
 
 
-                pulsed = true;
-                time = 0;
-                direction = 0;
+
+				GetComponent<Animator> ().SetTrigger ("Jumping");
+
+
+
+				jump = true;
+				direction = 0;
+               	//pulsed = true;
+                //time = 0;
+                //direction = 0;
             }
+
+			/*
+			if ((Input.GetKeyDown(KeyCode.S)) && jump)
+			{
+				destination = new Vector3(transform.position.x, 0, -3);
+				StartCoroutine(MoveFromTo(transform.position, destination, 0.1f, true));
+
+				//GetComponent<Animator> ().SetTrigger ("Jumping");
+
+				jump = false;
+				moving = true;
+				//pulsed = true;
+				//time = 0;
+				//direction = 0;
+			}
+			*/
         }
+
+
+		if (jump && !moving && transform.position.y != 0f) 
+		{
+			destination += Vector3.down * distance;
+			StartCoroutine(MoveFromTo(transform.position, destination, 0.3f));
+
+
+
+		}
+
 
 
         if (time < pulsationTime && pulsed)
@@ -201,8 +244,10 @@ public class CharacterMove : MonoBehaviour
             col.gameObject.SetActive(false);
             currentHealth -= damage;
 
-            if (currentHealth < 0)
-                GameProgress.current.GameOver = true;
+			if (currentHealth < 0) {
+				GameProgress.current.GameOver = true;
+				GetComponent<Animator> ().SetTrigger ("Dead");
+			}
             else
             {
                 healthSlider.value = currentHealth;
@@ -226,10 +271,9 @@ public class CharacterMove : MonoBehaviour
         hasBeenDamaged = false;
     }
 
-    IEnumerator MoveFromTo(Vector3 pA, Vector3 pB, float time, bool character)
+    IEnumerator MoveFromTo(Vector3 pA, Vector3 pB, float time)
     {
-
-		if (!moving || !character)
+		if (!moving)
         {
             moving = true;
             float t = 0;
@@ -238,20 +282,41 @@ public class CharacterMove : MonoBehaviour
             {
                 t += Time.deltaTime / time;
 
-				if (character)
-					transform.position = Vector3.Lerp (pA, pB, t);
-				else 
-					GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position = Vector3.Lerp (pA, pB, t);
-
+				transform.position = Vector3.Lerp (transform.position, destination, t);			
 
                 yield return null;
             }
 
             moving = false;
+			//Debug.Log ("OUT");
+
+			if (transform.position.y == 0.0f && jump) {
+				jump = false;
+				Debug.Log ("FALSO");
+			}
 
         }
     }
 
+	IEnumerator MoveCameraFromTo(Vector3 pA, Vector3 pB, float time)
+	{
+		if (moving)
+		{
+			//moving = true;
+			float t = 0;
+
+			while (t < 1.0f)
+			{
+				t += Time.deltaTime / time;
+
+				GameObject.Find ("Main Camera").GetComponent<Camera> ().transform.position = Vector3.Lerp (pA, pB, t);
+
+				yield return null;
+			}
+
+			//moving = false;
+		}
+	}
 
 }
 
