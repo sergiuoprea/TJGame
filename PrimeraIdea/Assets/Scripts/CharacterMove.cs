@@ -170,6 +170,17 @@ public class CharacterMove : MonoBehaviour
                 time = 0;
                 direction = 0;
             }
+
+            if ((Input.GetKeyDown(KeyCode.W)))
+            {
+                destination += Vector3.up * distance;
+                StartCoroutine(MoveFromTo(transform.position, destination, 0.1f, true));
+
+
+                pulsed = true;
+                time = 0;
+                direction = 0;
+            }
         }
 
 
@@ -207,11 +218,11 @@ public class CharacterMove : MonoBehaviour
 
         for(int i = 0; i < duration; ++i)
         {
-            GetComponentInChildren<MeshRenderer>().enabled = !GetComponentInChildren<MeshRenderer>().enabled;
+            GetComponentInChildren<SkinnedMeshRenderer> ().enabled = !GetComponentInChildren<SkinnedMeshRenderer>().enabled;
             yield return new WaitForSeconds(s);
         }  
        
-        GetComponentInChildren<MeshRenderer>().enabled = true;
+        GetComponentInChildren<SkinnedMeshRenderer>().enabled = true;
         hasBeenDamaged = false;
     }
 

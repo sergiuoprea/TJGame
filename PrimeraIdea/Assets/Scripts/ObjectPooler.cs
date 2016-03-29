@@ -7,8 +7,9 @@ public class ObjectPooler : MonoBehaviour
 
     public static ObjectPooler current;
 
-    public GameObject pooledRoad;
-    public int roadPooledAmount;
+    public List<GameObject> roads;
+    //public GameObject pooledRoad;
+    private int roadPooledAmount;
     public bool willGrowRoad = true;
 
     public GameObject pooledObstacle;
@@ -36,10 +37,21 @@ public class ObjectPooler : MonoBehaviour
 
         pooledRoads = new List<GameObject>();
         pooledObstacles = new List<GameObject>();
+        roadPooledAmount = roads.Count;
+
+        int rand;
+        List<int> created = new List<int>();
 
         for(int i = 0; i < roadPooledAmount; ++i)
         {
-            GameObject obj = Instantiate(pooledRoad);
+            rand = Random.Range(0, roadPooledAmount - 1);
+
+            while(created.Contains(rand))
+            {
+                rand = Random.Range(0, roadPooledAmount - 1);
+            }
+
+            GameObject obj = Instantiate(roads[rand]);
             obj.SetActive(false);
             pooledRoads.Add(obj);            
         }
@@ -75,7 +87,8 @@ public class ObjectPooler : MonoBehaviour
 
         if(willGrowRoad)
         {
-            GameObject obj = (GameObject)Instantiate(pooledRoad);
+            int rand = Random.Range(0, 2);
+            GameObject obj = (GameObject)Instantiate(roads[rand]);
             pooledRoads.Add(obj);
             return obj;
         }
