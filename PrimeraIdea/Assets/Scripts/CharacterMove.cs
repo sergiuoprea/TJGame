@@ -240,7 +240,7 @@ public class CharacterMove : MonoBehaviour
 
     void OnTriggerEnter(Collider col)
     {
-        if (!hasBeenDamaged && col.gameObject.tag == "Obstacles")
+        if (!hasBeenDamaged && (col.gameObject.tag == "Obstacles" || col.gameObject.tag == "Car" || col.gameObject.tag == "Peaton"))
         {
             col.gameObject.SetActive(false);
             currentHealth -= damage;

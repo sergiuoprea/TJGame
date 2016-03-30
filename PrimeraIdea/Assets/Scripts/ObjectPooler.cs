@@ -12,7 +12,7 @@ public class ObjectPooler : MonoBehaviour
     private int roadPooledAmount;
     public bool willGrowRoad = true;
 
-    public GameObject pooledObstacle;
+    public List<GameObject> obstacles;
     public int obstaclePooledAmount;
     public bool willGrowObstacle = true;
 
@@ -44,21 +44,31 @@ public class ObjectPooler : MonoBehaviour
 
         for(int i = 0; i < roadPooledAmount; ++i)
         {
-            rand = Random.Range(0, roadPooledAmount - 1);
+            rand = Random.Range(0, roadPooledAmount);
 
             while(created.Contains(rand))
             {
-                rand = Random.Range(0, roadPooledAmount - 1);
+                rand = Random.Range(0, roadPooledAmount);
             }
 
+            created.Add(rand);
             GameObject obj = Instantiate(roads[rand]);
             obj.SetActive(false);
             pooledRoads.Add(obj);            
         }
 
+        created.Clear();
         for(int i = 0; i < obstaclePooledAmount; i++)
         {
-            GameObject obj = Instantiate(pooledObstacle);
+
+            rand = Random.Range(0, roadPooledAmount);
+
+            while (created.Contains(rand))
+            {
+                rand = Random.Range(0, obstacles.Count);
+            }
+
+            GameObject obj = Instantiate(obstacles[rand]);
             obj.SetActive(false);
             pooledObstacles.Add(obj);
         }
@@ -77,17 +87,32 @@ public class ObjectPooler : MonoBehaviour
     public GameObject GetPooledRoad()
     {
 
+        List<int> done = new List<int>();
+        int rand;
+
         for (int i = 0; i < pooledRoads.Count; ++i)
         {
-            if (!pooledRoads[i].activeInHierarchy)
+            
+            do
             {
-                return pooledRoads[i];
+                rand = Random.Range(0, roadPooledAmount);
             }
-        }
+            while (done.Contains(rand));
+
+            done.Add(rand);
+
+            if (!pooledRoads[rand].activeInHierarchy)
+            {
+                return pooledRoads[rand];
+            }
+
+        }      
+
+
 
         if(willGrowRoad)
         {
-            int rand = Random.Range(0, 2);
+            rand = Random.Range(0, roadPooledAmount);
             GameObject obj = (GameObject)Instantiate(roads[rand]);
             pooledRoads.Add(obj);
             return obj;
@@ -98,7 +123,7 @@ public class ObjectPooler : MonoBehaviour
 
     public GameObject GetPooledObstacle()
     {
-
+        int rand;
         for (int i = 0; i < pooledObstacles.Count; ++i)
         {
             if (!pooledObstacles[i].activeInHierarchy)
@@ -109,7 +134,8 @@ public class ObjectPooler : MonoBehaviour
 
         if (willGrowObstacle)
         {
-            GameObject obj = (GameObject)Instantiate(pooledObstacle);
+            rand = Random.Range(0, roadPooledAmount);
+            GameObject obj = (GameObject)Instantiate(obstacles[rand]);
             pooledObstacles.Add(obj);
             return obj;
         }

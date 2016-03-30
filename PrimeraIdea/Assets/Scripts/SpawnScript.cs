@@ -20,7 +20,7 @@ public class SpawnScript : MonoBehaviour {
 
         obstacles = new List<GameObject>();
         tiempoTranscurrido = 0;
-        frecuenciaSpawn = 0.3f;
+        frecuenciaSpawn = 1f;
         spawnPowerup = true;
         rails = new float[] {3, 1.5f, 0, -1.5f,-3};
 	}
@@ -46,7 +46,8 @@ public class SpawnScript : MonoBehaviour {
                 {
                     temp = ObjectPooler.current.GetPooledObstacle();
                     temp.SetActive(true);
-                    temp.transform.position = new Vector3(rails[(int)Random.Range(0, 4)], 0.5f, 80);
+                    // temp.transform.position = new Vector3(rails[(int)Random.Range(0, 4)], 0.5f, 80);
+                    temp.transform.position = new Vector3(rails[2], -0.3f, 80);
                     obstacles.Add(temp);
                 }
 
