@@ -90,15 +90,18 @@ public class CharacterMove : MonoBehaviour
                     if (couldBeSwipe && (swipeTime < maxSwipeTime) && (swipeDist > minSwipeDist))
                     {
                         // It's a swiiiiiiiiiiiipe!
-						
-						float h = Mathf.Sign (touch.position.x - startPos.x);
-						float v = Mathf.Sign (touch.position.y - startPos.y);
 
-						if (h >= 0 && h > v)
+                        float h = Mathf.Abs(touch.position.x - startPos.x);
+                        float v = Mathf.Abs(touch.position.y - startPos.y);
+
+                        float hS = Mathf.Sign (touch.position.x - startPos.x);
+						float vS = Mathf.Sign (touch.position.y - startPos.y);                        
+
+						if (hS >= 0 && h > v)
 							direction = 1;
-						else if (h <= 0 && h > v)
+						else if (hS <= 0 && h > v)
 							direction = -1;
-						else if (v >= 0 && v > h)
+						else if (vS >= 0 && v > h)
 							direction = 2;
 						
                         couldBeSwipe = false;
@@ -185,11 +188,7 @@ public class CharacterMove : MonoBehaviour
                 destination += Vector3.up * distance;
 				StartCoroutine(MoveFromTo(transform.position, destination, 0.3f));
 
-
-
 				GetComponent<Animator> ().SetTrigger ("Jumping");
-
-
 
 				jump = true;
 				direction = 0;
@@ -234,6 +233,8 @@ public class CharacterMove : MonoBehaviour
 
         if (pulsed)
             time += Time.deltaTime;
+
+        direction = 0;
                 
     }
 
@@ -302,7 +303,6 @@ public class CharacterMove : MonoBehaviour
 	{
 		if (moving)
 		{
-			//moving = true;
 			float t = 0;
 
 			while (t < 1.0f)
@@ -314,7 +314,6 @@ public class CharacterMove : MonoBehaviour
 				yield return null;
 			}
 
-			//moving = false;
 		}
 	}
 
