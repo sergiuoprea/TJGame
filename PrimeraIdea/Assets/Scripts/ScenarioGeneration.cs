@@ -15,8 +15,6 @@ public class ScenarioGeneration : MonoBehaviour {
     private int currentRoadId = 0;
     private Transform CenterPoints;
 
-    private float speed;
-
     private bool newRoad = false;
     private object obj;
 
@@ -28,7 +26,6 @@ public class ScenarioGeneration : MonoBehaviour {
         numberRoads = 3;
 
         CreateNewRoad();
-        speed = GameProgress.current.Speed;
     }
 
 
@@ -49,7 +46,9 @@ public class ScenarioGeneration : MonoBehaviour {
         {
 
             float initialPosition = 0;
-            GameObject obj;
+			GameObject obj;
+
+
             for (int i = 0; i < 3; ++i)
             {
                 if(currentRoads.Count != 0)
@@ -65,7 +64,7 @@ public class ScenarioGeneration : MonoBehaviour {
                 obj.SetActive(true);
                 currentRoads.Add(obj);
 
-            }
+            }            
         }
     }
 	
@@ -76,7 +75,7 @@ public class ScenarioGeneration : MonoBehaviour {
 
         //clouds.transform.position += Vector3.right * 0.01f;
 
-        if (!GameProgress.current.GameOver)
+		if (!GameProgress.current.GameOver && GameProgress.current.StartFlag && Time.timeScale != 0)
         {
             foreach (var r in currentRoads)
             {
@@ -86,7 +85,7 @@ public class ScenarioGeneration : MonoBehaviour {
                     newRoad = true;
                 }
                 else
-                    r.transform.position += speed * Vector3.back;
+					r.transform.position += GameProgress.current.Speed * Vector3.back;
             }
 
             if (newRoad)

@@ -9,6 +9,8 @@ public class SpawnScript : MonoBehaviour {
     public GameObject powerup;
 
     private float tiempoTranscurrido;
+	private float distanciaRecorrida;
+
     private float frecuenciaSpawn;
     private bool spawnPowerup;
     private float[] rails;
@@ -20,7 +22,7 @@ public class SpawnScript : MonoBehaviour {
 
         obstacles = new List<GameObject>();
         tiempoTranscurrido = 0;
-        frecuenciaSpawn = 1f;
+        frecuenciaSpawn = 25f;
         spawnPowerup = true;
         rails = new float[] {3, 1.5f, 0, -1.5f,-3};
 	}
@@ -28,11 +30,14 @@ public class SpawnScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        tiempoTranscurrido += Time.deltaTime;
-
-        if (!GameProgress.current.GameOver)
+        
+		if (!GameProgress.current.GameOver && GameProgress.current.StartFlag && Time.timeScale != 0)
         {
-            if (tiempoTranscurrido > frecuenciaSpawn && !GameProgress.current.GameOver)
+
+            tiempoTranscurrido += Time.deltaTime;
+			distanciaRecorrida += GameProgress.current.Speed - GameProgress.current.ObstacleSpeed;
+
+			if (distanciaRecorrida > frecuenciaSpawn && !GameProgress.current.GameOver)
             {
                 GameObject temp;
                 if (spawnPowerup)
@@ -47,12 +52,13 @@ public class SpawnScript : MonoBehaviour {
                     temp = ObjectPooler.current.GetPooledObstacle();
                     temp.SetActive(true);
                     // temp.transform.position = new Vector3(rails[(int)Random.Range(0, 4)], 0.5f, 80);
-                    temp.transform.position = new Vector3(rails[2], -0.3f, 80);
+                    temp.transform.position = new Vector3(rails[2], 0.0f, 80);
                     obstacles.Add(temp);
                 }
 
                 tiempoTranscurrido -= frecuenciaSpawn;
                 spawnPowerup = !spawnPowerup;
+				distanciaRecorrida -= frecuenciaSpawn;
             }
         }
 	}

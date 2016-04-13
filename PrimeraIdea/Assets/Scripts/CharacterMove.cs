@@ -28,20 +28,16 @@ public class CharacterMove : MonoBehaviour
     private bool hasBeenDamaged;
 
     public Slider healthSlider;
-    
-    private Vector2 startPos = Vector2.zero;
-    private bool couldBeSwipe = false;
-    private float comfortZone;
-    private float minSwipeDist = 50.0f;
-    private float maxSwipeTime = 0.5f;
-    private float startTime;
 
-    private int direction;
+
+	private TouchControl touchControl;
+	private SwipeAction direction;
+
+	private float currentSpeed;    
 
     // Use this for initialization
     void Start()
     {
-
         time = 0;
         canIPulse = true;
         pulsed = false;
@@ -60,6 +56,10 @@ public class CharacterMove : MonoBehaviour
         healthSlider.value = currentHealth;
         hasBeenDamaged = false;
 
+		touchControl = GetComponent<TouchControl> ();
+
+		currentSpeed = GameProgress.current.Speed;
+
 
     }
 
@@ -67,84 +67,29 @@ public class CharacterMove : MonoBehaviour
     void Update()
     {
 
-        if (Input.touchCount > 0)
-        {
-            float swipeTime;
-            float swipeDist;
-            Touch touch = Input.touches[0];
+		direction = touchControl.GetSwipeAction ();
 
-            switch (touch.phase)
-            {
-                case TouchPhase.Began:
-                    couldBeSwipe = true;
-                    startPos = touch.position;
-                    startTime = Time.time;
+		if (GameProgress.current.StartFlag && !GameProgress.current.Running) {
+			GetComponent<Animator> ().SetTrigger ("Running");
+		}
 
-                    break;
-               
-            case TouchPhase.Moved:
-
-                    swipeTime = Time.time - startTime;
-                    swipeDist = (touch.position - startPos).magnitude;
-
-                    if (couldBeSwipe && (swipeTime < maxSwipeTime) && (swipeDist > minSwipeDist))
-                    {
-                        // It's a swiiiiiiiiiiiipe!
-
-                        float h = Mathf.Abs(touch.position.x - startPos.x);
-                        float v = Mathf.Abs(touch.position.y - startPos.y);
-
-                        float hS = Mathf.Sign (touch.position.x - startPos.x);
-						float vS = Mathf.Sign (touch.position.y - startPos.y);                        
-
-						if (hS >= 0 && h > v)
-							direction = 1;
-						else if (hS <= 0 && h > v)
-							direction = -1;
-						else if (vS >= 0 && v > h)
-							direction = 2;
-						
-                        couldBeSwipe = false;
-
-                    }
-
-                    break;
-
-                    /*
-
-            case TouchPhase.Stationary:
-                couldBeSwipe = false;
-                break;
-                */
-
-                case TouchPhase.Ended:
-                    couldBeSwipe = true;
-                    /*
-                    swipeTime = Time.time - startTime;
-                    swipeDist = (touch.position - startPos).magnitude;
-
-                    if (couldBeSwipe && (swipeTime < maxSwipeTime) && (swipeDist > minSwipeDist))
-                    {
-                        // It's a swiiiiiiiiiiiipe!
-
-                        if (Mathf.Sign(touch.position.x - startPos.x) >= 0)
-                            direction = 1;
-                        else
-                            direction = -1;
-                        
-                    }
-                    */
-
-                    break;
-
-            }
-        }
         
-        if (canIPulse && !GameProgress.current.GameOver)
+		if (canIPulse && !GameProgress.current.GameOver && GameProgress.current.EnableMovement)
         {
-			if ((Input.GetKeyDown(KeyCode.A) || direction == -1) && carril != 1 && (!moving || jump))
+			if ((Input.GetKeyDown(KeyCode.A) || direction == SwipeAction.LeftSwipe) && carril != 1 && (!moving || jump))
             {
                 destination += Vector3.left * distance;
+
+				if (carril == 2) 
+				{
+					//destination.y = 0.2f;
+				}
+
+				if (carril == 5)
+				{
+					destination.y = 0.0f;
+				}
+
 				//StopCoroutine ("MoveFromTo");
                 StartCoroutine(MoveFromTo(transform.position, destination, 0.1f));
 				destinationCamera += Vector3.left * (distance * 0.70f);
@@ -159,13 +104,24 @@ public class CharacterMove : MonoBehaviour
                 pulsed = true;
                 carril--;
                 time = 0;
-                direction = 0;
+				direction = SwipeAction.Nothing;
 
             }
 
-			if ((Input.GetKeyDown(KeyCode.D) || direction == 1) && carril != 5 && (!moving || jump))
+			if ((Input.GetKeyDown(KeyCode.D) || direction == SwipeAction.RightSwipe) && carril != 5 && (!moving || jump))
             {
                 destination += Vector3.right * distance;
+
+				if (carril == 4) 
+				{
+					//destination.y = 0.2f;
+				}
+
+				if (carril == 1)
+				{
+					destination.y = 0.0f;
+				}
+
 				//StopCoroutine ("MoveFromTo");
                 StartCoroutine(MoveFromTo(transform.position, destination, 0.1f));
 				destinationCamera += Vector3.right * (distance * 0.70f);
@@ -180,18 +136,18 @@ public class CharacterMove : MonoBehaviour
                 pulsed = true;
                 carril++;
                 time = 0;
-                direction = 0;
+				direction = SwipeAction.Nothing;
             }
 
-			if ((Input.GetKeyDown(KeyCode.W) || direction == 2) && !jump && !moving)
+			if ((Input.GetKeyDown(KeyCode.W) || direction == SwipeAction.UpSwipe) && !jump && !moving)
             {
-                destination += Vector3.up * distance;
+				destination += Vector3.up * (distance);// + 0.2f);
 				StartCoroutine(MoveFromTo(transform.position, destination, 0.3f));
 
 				GetComponent<Animator> ().SetTrigger ("Jumping");
 
 				jump = true;
-				direction = 0;
+				direction = SwipeAction.Nothing;
                	//pulsed = true;
                 //time = 0;
                 //direction = 0;
@@ -215,13 +171,13 @@ public class CharacterMove : MonoBehaviour
         }
 
 
-		if (jump && !moving && transform.position.y != 0f) 
+		if (jump && !moving) 
 		{
-			destination += Vector3.down * distance;
-			StartCoroutine(MoveFromTo(transform.position, destination, 0.3f));
-
-
-
+			if((transform.position.y != 0.0f))// && (carril == 2 || carril == 3 || carril == 4)) || (transform.position.y != 0.2f && carril == 5) || (transform.position.y != 0.2f && carril == 1))
+			{			
+				destination += Vector3.down * (distance); //+ 0.2f);
+				StartCoroutine(MoveFromTo(transform.position, destination, 0.3f));
+			}
 		}
 
 
@@ -234,7 +190,8 @@ public class CharacterMove : MonoBehaviour
         if (pulsed)
             time += Time.deltaTime;
 
-        direction = 0;
+
+		direction = SwipeAction.Nothing;
                 
     }
 
@@ -256,19 +213,34 @@ public class CharacterMove : MonoBehaviour
                 StartCoroutine(Damaged(7, 0.15f));
             }
         }
+
+		if(!hasBeenDamaged && col.gameObject.tag == "Powerup")
+		{
+			col.gameObject.SetActive (false);
+
+			GameProgress.current.batterySlider.GetComponent<Slider> ().value += 10;
+		}
     }
 
     IEnumerator Damaged(float duration, float s)
     {
-       
+		SkinnedMeshRenderer[] renderer = GetComponentsInChildren<SkinnedMeshRenderer> ();
+
 
         for(int i = 0; i < duration; ++i)
         {
-            GetComponentInChildren<SkinnedMeshRenderer> ().enabled = !GetComponentInChildren<SkinnedMeshRenderer>().enabled;
+           // GetComponentInChildren<SkinnedMeshRenderer> ().enabled = !GetComponentInChildren<SkinnedMeshRenderer>().enabled;
+
+			foreach (var r in renderer) {
+				r.enabled = !r.enabled;
+			}
+
             yield return new WaitForSeconds(s);
         }  
        
-        GetComponentInChildren<SkinnedMeshRenderer>().enabled = true;
+		foreach (var r in renderer) {
+			r.enabled = true;
+		}
         hasBeenDamaged = false;
     }
 
@@ -291,11 +263,10 @@ public class CharacterMove : MonoBehaviour
             moving = false;
 			//Debug.Log ("OUT");
 
-			if (transform.position.y == 0.0f && jump) {
+			if ((transform.position.y == 0.0f /* || (transform.position.y <= 0.2f && carril == 1) ||  (transform.position.y <= 0.2f && carril == 5))*/ && jump) )
+			{
 				jump = false;
-				Debug.Log ("FALSO");
 			}
-
         }
     }
 

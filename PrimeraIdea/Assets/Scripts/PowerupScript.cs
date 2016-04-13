@@ -3,14 +3,18 @@ using System.Collections;
 
 public class PowerupScript : MonoBehaviour {
 
-    private float speed = -0.1F;
-	// Update is called once per frame
-	void Update () {
 
-        if(!GameProgress.current.GameOver)
-            transform.Translate(0, 0, speed - GameProgress.current.Speed);
+	void Update () 
+	{
 
-        if (transform.position.z < -30f)
-            gameObject.SetActive(false);
+		if (!GameProgress.current.GameOver && GameProgress.current.StartFlag && Time.timeScale != 0)
+        {
+			transform.Translate(0, 0, GameProgress.current.ObstacleSpeed - GameProgress.current.Speed);
+
+            if (transform.position.z < -30f)
+                gameObject.SetActive(false);
+        }
 	}
+
+
 }

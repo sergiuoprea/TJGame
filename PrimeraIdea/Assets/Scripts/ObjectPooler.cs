@@ -39,39 +39,44 @@ public class ObjectPooler : MonoBehaviour
         pooledObstacles = new List<GameObject>();
         roadPooledAmount = roads.Count;
 
-        int rand;
+        int rand = 0;
         List<int> created = new List<int>();
 
         for(int i = 0; i < roadPooledAmount; ++i)
         {
+			
             rand = Random.Range(0, roadPooledAmount);
 
             while(created.Contains(rand))
             {
                 rand = Random.Range(0, roadPooledAmount);
             }
+            
 
             created.Add(rand);
-            GameObject obj = Instantiate(roads[rand]);
+            GameObject obj = Instantiate(roads[i]);
             obj.SetActive(false);
             pooledRoads.Add(obj);            
         }
 
         created.Clear();
+
         for(int i = 0; i < obstaclePooledAmount; i++)
         {
-
-            rand = Random.Range(0, roadPooledAmount);
+			
+			rand = Random.Range(0, obstacles.Count);
 
             while (created.Contains(rand))
             {
                 rand = Random.Range(0, obstacles.Count);
             }
 
+
             GameObject obj = Instantiate(obstacles[rand]);
             obj.SetActive(false);
             pooledObstacles.Add(obj);
         }
+
 
 		/*
 		for(int i = 0; i < cloudPooledAmount; i++)
@@ -95,7 +100,7 @@ public class ObjectPooler : MonoBehaviour
             
             do
             {
-                rand = Random.Range(0, roadPooledAmount);
+				rand = Random.Range(0, roadPooledAmount);
             }
             while (done.Contains(rand));
 
